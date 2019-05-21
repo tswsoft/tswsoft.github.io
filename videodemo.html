@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width, height=device-height, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>hello world</title>
+    <!-- <link rel="stylesheet" type="text/css" href="res://css/index.css"> -->
+    <link href="https://assets-library/scripts/jquery.mobile-1.4.3.min.css" rel="stylesheet" />
+    <script src="https://assets-library/scripts/jquery-2.1.1.min.js"></script>
+    <script src="https://assets-library/scripts/jquery.mobile-1.4.3.min.js"></script>
+    <script src="https://assets-library/clientapp.js"></script>
+    <script src="https://assets-library/cordova.js"></script>
+    <script src="https://assets-library/scripts/mobile.js"></script>
+    <script src="https://assets-library/scripts/mobile_cord.js"></script>
+
+
+    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.6.0/skins/default/aliplayer-min.css" />
+    <script type="text/javascript" src="https://g.alicdn.com/de/prismplayer/2.6.0/aliplayer-min.js"></script>
+</head>
+
+<body>
+<div class="app">
+    <div class="prism-player" id="J_prismPlayer" style="position: absolute"></div>
+    <div id="deviceready" class="blink">
+        <p id='btnPhotoSave'>照片保存</p>
+        <p id='btnPhoto'>拍照裁剪</p>
+        <p id='btnCrop'>相册裁剪</p>
+        <p id='btnPhotoMutil'>多选</p>
+        <p id='btnPicture'>从相册选取</p>
+        <p id='btnAudioCapture'>声音录制</p>
+        <p id='btnAudioPlay'>声音播放</p>
+        <p id='btnVideoCapture'>视频录制</p>
+        <p></p>
+        <p id='btnVideoSelect'>视频选择</p>
+        <p></p>
+        <p id='btnVideoPlay'>视频播放</p>
+        <p id='btnAliPay'>支付宝支付</p>
+        <p id='btnWxPay'>微信支付</p>
+        <p id="btnScan">二维码扫描</p>
+        <p id="pShare">分享</p>
+        <p id="directShare">直接分享</p>
+        <p id="pInfo">获取用户资料</p>
+        <p id="btnAndroidLoc">安卓定位</p>
+        <p id="btnIosLoc">ios定位</p>
+        <p id='pOpenBrowser'>打开浏览器</p>
+        <p id='btnIosOpenCamera'>ios直接拍照</p>
+        <p id='btnIosOpenPhoto'>ios直接选择照片裁剪</p>
+        <img id='myImage' src="" />
+    </div>
+</div>
+</body>
+
+</html>
+<script>
+    var app = {
+        // Application Constructor
+        initialize: function () {
+            document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
+        },
+
+        onDeviceReady: function () {
+            this.receivedEvent('deviceready');
+
+
+
+        },
+
+        // Update DOM on a Received Event
+        receivedEvent: function (id) {
+            var me = this;
+
+        alert(AppUpdate);
+
+AppUpdate.checkAppUpdate(function(){}, function(){}, 'http://tswsoft.oss-cn-hangzhou.aliyuncs.com/version.xml');
+
+
+            $('#btnPhotoSave').click(function (ev) {
+                cordova.plugins.photoLibrary.saveImage('https://upload.jianshu.io/users/upload_avatars/453168/8607c787-0a81-4444-8fc4-82dbc2b060a0.jpeg', '乐成长', function (res) {
+                    alert(JSON.stringify(res))
+                }, function (err) {
+                    alert(err)
+                });
+
+            });
+
+            $('#btnAndroidLoc').click(function (ev) {
+                baiduLocation.getCurrentPosition(function (res) { alert(JSON.stringify(res)) },
+                    function (res) { alert(res) });
+            });
+
+            $('#btnIosLoc').click(function (ev) {
+                navigator.geolocation.getCurrentPosition(function (res) { alert(JSON.stringify(res)) },
+                    function (res) { alert(res) }, {});
+            });
+
+            $('#btnPhotoMutil').click(function (ev) {
+                ImagePicker.getPictures(function (result) {
+                    var image = document.getElementById('myImage');
+                    alert(result.length);
+                    alert(result[0].url);
+                    image.src = "data:image/jpeg;base64," + result[0].data;
+                    me.uploadOss(result[0].url);
+                }, function (err) {
+                    alert(err);
+                }, { maximumImagesCount: 9, width: 1920, height: 1440, quality: 100, crop: true, outPutY: 400, outPutX: 200 });
+
+            });
+
+        //相册裁剪  苹果端的这个接口同时支持拍照和相册选取
+        $('#btnCrop').click(function (ev) {
+                cropphoto.crop(onSuccess, onFail, [{
+                    needCrop: "1",
+                    maxWidth: 800,
+                    maxHeight: 800,
+                    minWidth: 100,
+                    minHeight: 100,
+                    aspectX: 1,
+                    aspectY: 1
+                }]);
+
+                function onSuccess(imageURI) {
+                    var image = document.getElementById('myImage');
+                    // alert(image);
+                    // alert(imageURI);
+                    //alert(JSON.stringify(imageURI));
+                    //alert(imageURI);
+                    //image.src = imageURI;
+                    image.src = "data:image/jpeg;base64," + imageURI;
+                    // 上传
+                    //me.uploadOss(imageURI.url);
+                }
+
+                function onFail(message) {
+                    alert('Failed because: ' + message);
+                }
+            });
+
+            //ios直接拍照
+            $('#btnIosOpenCamera').click(function (ev) {
+                cropphoto.openCamera(onSuccess, onFail, [{
+                    needCrop: "1",
+                    maxWidth: 800,
+                    maxHeight: 800,
+                    minWidth: 100,
+                    minHeight: 100,
+                    aspectX: 1,
+                    aspectY: 1
+                }]);
+
+                function onSuccess(imageURI) {
+                    var image = document.getElementById('myImage');
+                    // alert(image);
+                    // alert(imageURI);
+                    //alert(JSON.stringify(imageURI));
+                    //alert(imageURI);
+                    //image.src = imageURI;
+                    image.src = "data:image/jpeg;base64," + imageURI;
+                    // 上传
+                    //me.uploadOss(imageURI.url);
+                }
+
+                function onFail(message) {
+                    alert('Failed because: ' + message);
+                }
+            });
+
+
+             //ios直接选择照片
+             $('#btnIosOpenPhoto').click(function (ev) {
+                cropphoto.openPhoto(onSuccess, onFail, [{
+                    needCrop: "1",
+                    maxWidth: 800,
+                    maxHeight: 800,
+                    minWidth: 100,
+                    minHeight: 100,
+                    aspectX: 1,
+                    aspectY: 1
+                }]);
+
+                function onSuccess(imageURI) {
+                    var image = document.getElementById('myImage');
+                    // alert(image);
+                    // alert(imageURI);
+                    //alert(JSON.stringify(imageURI));
+                    //alert(imageURI);
+                    //image.src = imageURI;
+                    image.src = "data:image/jpeg;base64," + imageURI;
+                    // 上传
+                    //me.uploadOss(imageURI.url);
+                }
+
+                function onFail(message) {
+                    alert('Failed because: ' + message);
+                }
+            });
+
+            //拍照裁剪
+            $('#btnPhoto').click(function (ev) {
+
+                navigator.camera.getPicture(onSuccess, onFail, {
+                    quality: 100,
+                    destinationType: Camera.DestinationType.DATA_URL,
+                    allowEdit: true,
+                    aspectX: 1,
+                    aspectY: 1
+                });
+
+                function onSuccess(imageURI) {
+                    var image = document.getElementById('myImage');
+                    // alert(image);
+                    // alert(imageURI);
+                    //alert(JSON.stringify(imageURI));
+                    alert(imageURI.url);
+                    //image.src = imageURI;
+                    image.src = "data:image/jpeg;base64," + imageURI.data;
+                    // 上传
+                    me.uploadOss(imageURI.url);
+                }
+
+                function onFail(message) {
+                    alert('Failed because: ' + message);
+                }
+            });
+
+
+
+            $('#btnPicture').click(function (ev) {
+                // navigator.camera.getPicture(onSuccess, onFail, {
+                //     sourceType: 2,
+                //     quality: 50,
+                //     allowEdit: true,
+                //     destinationType: Camera.DestinationType.DATA_URL
+                // });
+
+                navigator.camera.getPicture(onSuccess, onFail, {
+                    quality: 50,
+                    sourceType: 2,
+                    destinationType: Camera.DestinationType.DATA_URL,
+                    allowEdit: true
+                });
+
+                function onSuccess(imageURI) {
+                    var image = document.getElementById('myImage');
+                    alert(image);
+                    alert(imageURI);
+                    //alert(JSON.stringify(imageURI));
+                    alert(imageURI.url);
+                    //image.src = imageURI;
+                    image.src = "data:image/jpeg;base64," + imageURI.data;
+
+                    // 上传
+                    me.uploadOss(imageURI.url);
+                }
+
+                function onFail(message) {
+                    alert('Failed because: ' + message);
+                }
+            });
+
+
+
+            //声音播放
+            $('#btnAudioPlay').click(function (ev) {
+                alert('开始录制');
+                var src = "http://tswsoft.oss-cn-hangzhou.aliyuncs.com/test/1526537192643.wav";
+                var mediaRec = new Media(src, function (msg) { }, function (msg) { });
+                // 启动录制音频
+                mediaRec.startRecord();
+
+
+            });
+
+            //声音录制
+            $('#btnAudioCapture').click(function (ev) {
+
+                // //开始录音（最长录制时间：15秒）
+                // navigator.device.capture.captureAudio(onSuccess, onError, { duration: 15 });
+
+                // //录制成功
+                // function onSuccess(mediaFiles) {
+                //     var i, path, len;
+                //     //遍历获取录制的文件（iOS只支持一次录制一个视频或音频）
+                //     for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+                //         console.log(mediaFiles);
+                //         path = mediaFiles[i].fullPath;
+                //         alert("录制成功！\n\n"
+                //             + "文件名：" + mediaFiles[i].name + "\n"
+                //             + "大小：" + mediaFiles[i].size + "\n\n"
+                //             + "localURL地址：" + mediaFiles[i].localURL + "\n\n"
+                //             + "fullPath地址：" + path);
+                //     }
+                // }
+
+                // //录制失败
+                // function onError(error) {
+                //     alert('录制失败！错误码：' + error.code);
+                // }
+
+
+                alert('开始录制');
+                var src = "myrecord.wav";
+                var mediaRec = new Media(src, function (msg) { }, function (msg) { });
+                // 启动录制音频
+                mediaRec.startRecord();
+                // 10秒后停止录制
+                var recTime = 0;
+                var recInterval = setInterval(function () {
+                    recTime = recTime + 1;
+                    if (recTime >= 10) {
+                        clearInterval(recInterval);
+                        mediaRec.stopRecord(function (msg) {
+                            alert("录制完成:" + msg);
+                            me.uploadOss(msg);
+                        }, function (msg) {
+                            alert("录制失败:" + msg);
+                        });
+
+                    }
+                }, 1000);
+
+            });
+
+            //视频录制
+            $('#btnVideoCapture').click(function (ev) {
+                // //开始录像（最长录制时间：15秒）
+                // navigator.device.capture.captureVideo(onSuccess, onError, { duration: 15 });
+
+                // //录制成功
+                // function onSuccess(mediaFiles) {
+                //     var i, path, len;
+                //     //遍历获取录制的文件（iOS只支持一次录制一个视频或音频）
+                //     for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+                //         console.log(mediaFiles);
+                //         path = mediaFiles[i].fullPath;
+                //         alert("录制成功！\n\n"
+                //             + "文件名：" + mediaFiles[i].name + "\n"
+                //             + "大小：" + mediaFiles[i].size + "\n\n"
+                //             + "localURL地址：" + mediaFiles[i].localURL + "\n\n"
+                //             + "fullPath地址：" + path);
+
+                //             // 上传
+                //     me.uploadOss(path);
+                //     }
+                // }
+
+                // //录制失败
+                // function onError(error) {
+                //     alert('录制失败！错误码：' + error.code);
+                // }
+
+
+                alert(ComSkusoftPluginsVideo);
+
+                //duration 录制时长 ，  bitRate 清晰度 1 到 10   值越高越清晰但容量会变大
+                ComSkusoftPluginsVideo.record([{
+                    duration: 10,
+                    bitRate: 2
+                }], function (resultInfo) {
+                    alert(resultInfo);
+                    var image = document.getElementById('myImage');
+
+                    alert(resultInfo.url);
+                    image.src = "data:image/jpeg;base64," + resultInfo.data;
+                    //成功回调服务端
+                    me.uploadOss(resultInfo.url);
+                }, function (msg) {
+                    alert(msg);
+                });
+
+
+            });
+
+            //视频选择
+            $('#btnVideoSelect').click(function (ev) {
+
+                //maxSize 最大值 单位 M
+                ComSkusoftPluginsVideo.select([{
+                    maxSize: 10
+                }], function (resultInfo) {
+                    var image = document.getElementById('myImage');
+                    alert(resultInfo.url);
+                    // image.src = "data:image/jpeg;base64," + resultInfo.data;
+                    // //成功回调服务端
+                    // me.uploadOss(resultInfo.url);
+
+                    alert(resultInfo.dataSize);//文件大小 单位字节
+
+                    DialogsPlus.showLoading('上传视频', '上传中，请稍后...');
+                    image.src = "data:image/jpeg;base64," + resultInfo.data;
+                    //成功回调服务端
+                    //me.uploadOss(resultInfo.url);
+                    me.upload(resultInfo.url);
+                }, function (msg) {
+                    alert(msg);
+                });
+
+
+            });
+
+
+            //视频播放
+            $('#btnVideoPlay').click(function (ev) {
+
+                var player = new Aliplayer({
+                    id: 'J_prismPlayer',
+                    width: '100%',
+                    autoplay: false,
+                    //支持播放地址播放,此播放优先级最高
+                    source: 'http://tswsoft.oss-cn-hangzhou.aliyuncs.com/test/1526795920132.mp4'
+                }, function (player) {
+                    console.log('播放器创建好了。')
+                });
+
+            });
+
+            //支付宝支付
+            $('#btnAliPay').click(function (ev) {
+                var payInfo = 'alipay_sdk=alipay-sdk-java-dynamicVersionNo&app_id=2017051607255717&biz_content=%7B%22body%22%3A%22%E6%94%AF%E4%BB%98%E4%BA%A4%E6%98%93%E9%87%91%E9%A2%9D%22%2C%22out_trade_no%22%3A%221220009102%22%2C%22product_code%22%3A%22QUICK_MSECURITY_PAY%22%2C%22subject%22%3A%22%E8%AE%A2%E5%8D%95%3A1220009102%22%2C%22timeout_express%22%3A%225m%22%2C%22total_amount%22%3A%220.01%22%7D&charset=UTF-8&format=json&method=alipay.trade.app.pay&notify_url=http%3A%2F%2F106.14.207.5%3A8080%2Fxmy%2Fapi%2Fnotify&sign=VR1fO3IKHeqMXawflqQxaGCMfAtAn3%2BUh9dB207odTNm1a6ZwaoswCjvjjh2By48mRy2KeAq%2F6YNVGHCSQ4BA4OSjOy7XHjcQAxO%2F16S%2FfOriviSTCFmJ9PIAMgXbJdqKQB0zeE4ia8Srl0P%2FxnH%2Bh0cCU8a3JV60hQhFAOoPYLGHi00oZLNuP6d58ScwhiBWLvPb3BTQTsXKxKywOWszG%2B6EourxBgGgcz1VXaTIWb8Vnt%2Fjw4hfJLF0AKJyMODyTFu5%2B5clRZ9dJUlQD%2BGBHZPznjUPyv3zw5uJPbx%2BTWnmVitl%2BedwAsecUXYZ0SL7WbgpgN2qJ%2B2LqhNe7Srdw%3D%3D&sign_type=RSA2&timestamp=2018-04-26+17%3A14%3A53&version=1.0';
+                ComSkusoftPluginsAliPay.pay([{
+                    payInfo: payInfo
+                }], function (resultInfo) {
+                    alert(resultInfo);
+                    //成功回调服务端
+
+                }, function (msg) {
+                    alert(msg);
+                });
+
+
+            });
+
+            //微信支付
+            $('#btnWxPay').click(function (ev) {
+
+                var payInfo = {};
+                payInfo.appid = 'wx8e68f8c3522440eb'; //appid
+                payInfo.partnerid = '1490306182';//partnerid
+                payInfo.package = 'Sign=WXPay';//
+                payInfo.prepayid = 'prepay_id';//预支付id 需要服务端获取
+                payInfo.noncestr = 'noncestr';// noncestr 服务端生成
+                payInfo.timestamp = 'timestamp';// 时间戳，服务端生成
+                payInfo.sign = '12323213231';//md5加密串  服务端生成
+
+                alert(ComSkusoftPluginsWxPay);
+
+                ComSkusoftPluginsWxPay.pay([
+                    payInfo
+                ], function (resultInfo) {
+                    if (resultInfo == 0) {
+                        //成功回调服务端
+                        //todo
+                    } else {
+                        alert('支付失败!')
+                    }
+
+
+                }, function (msg) {
+
+                    if (msg.equals('-2')) {
+                        alert('已经取消支付！');
+                    } else {
+                        alert('msg');
+                    }
+                });
+
+            });
+
+
+            //条码扫描
+            $('#btnScan').click(function (ev) {
+
+                cordova.plugins.barcodeScanner.scan(onSuccess, onError);
+                function onSuccess(msg) {
+                    alert(JSON.stringify(msg));
+                    location.href = msg.text;
+                }
+                function onError(error) {
+                    alert(error);
+                }
+
+
+            });
+
+
+            //分享
+            $('#pShare').click(function (ev) {
+                SkusoftPluginsShare.sharing([
+                    {
+                        title: "这里是主题", titleUrl: "http://www.skusoft.com", text: "这里是分享内容1234567890",
+                        imageUrl: "http://tswsoft.oss-cn-hangzhou.aliyuncs.com/test/1526533692830.jpg", url: "http://www.skusoft.com"
+                    }]);
+            });
+
+            //分享
+
+            $('#directShare').click(function (ev) {
+
+                //function(callBack,text,img,url,title,platform)
+                SkusoftPluginsShare.directShare(
+                    function (res) { alert(res) },
+                    "这里是分享内容1234567890",
+                    "http://tswsoft.oss-cn-hangzhou.aliyuncs.com/test/1526533692830.jpg",
+                    "http://www.skusoft.com",
+                    "这里是主题",
+                    2
+                );
+            });
+
+
+            //获取用户资料
+            $('#pInfo').click(function (ev) {
+                //0 qq, 1 新浪微博 3 微信
+                SkusoftPluginsShare.getInfo(function (r) { alert(JSON.stringify(r)); }, 0);
+            });
+
+
+$('#pOpenBrowser').click(function (ev) {
+                cordova.ThemeableBrowser.open("https://hao.360.cn/?a1004", '_blank', {
+                    statusbar: {
+                        color: '#358912'
+                    },
+                    toolbar: {
+                        height: 44,
+                        color: '#358912'
+                    },
+                    title: {
+                        color: '#FFFFFF',
+                        showPageTitle: true
+                    },
+                    backButton: {
+                        image: 'back',
+                        imagePressed: 'back_pressed',
+                        align: 'left',
+                        event: 'backPressed'
+                    },
+                    // forwardButton: {
+                    //     image: 'forward',
+                    //     imagePressed: 'forward_pressed',
+                    //     align: 'left',
+                    //     event: 'forwardPressed'
+                    // },
+                    closeButton: {
+                        image: 'close',
+                        imagePressed: 'close_pressed',
+                        align: 'right',
+                        event: 'closePressed'
+                    },
+
+                    backButtonCanClose: true
+                }).addEventListener('backPressed', function (e) {
+                    //alert('back pressed');
+                }).addEventListener('helloPressed', function (e) {
+                    //alert('hello pressed');
+                }).addEventListener('sharePressed', function (e) {
+                    //alert(e.url);
+                }).addEventListener(cordova.ThemeableBrowser.EVT_ERR, function (e) {
+                    //console.error(e.message);
+                }).addEventListener(cordova.ThemeableBrowser.EVT_WRN, function (e) {
+                    //console.log(e.message);
+                });
+            });
+
+
+            //location.href = 'https://www.baidu.com/';
+            alert('Received Event: ' + id);
+        },
+        upload: function (fileURL) {
+
+
+
+            //上传成功
+            var success = function (r) {
+                alert("上传成功! Code = " + r.responseCode);
+            }
+            //上传失败
+            var fail = function (error) {
+                alert("上传失败! Code = " + error.code);
+            }
+
+            var options = new FileUploadOptions();
+            options.fileKey = "file1";
+            options.fileName = fileURL.substr(fileURL.lastIndexOf('/') + 1);
+            //options.mimeType = "text/plain";
+
+            //上传参数
+            var params = {};
+            params.value1 = "test";
+            params.value2 = "param";
+            options.params = params;
+
+            var ft = new FileTransfer();
+            //上传地址
+            var SERVER = "http://10.1.10.53:8089/oss/Upload.aspx"
+            ft.upload(fileURL, encodeURI(SERVER), success, fail, options);
+        }, uploadOss: function (fileURL) {
+            //上传成功
+            var success = function (r) {
+                alert("上传成功! url = " + r);
+            }
+            //上传失败
+            var fail = function (error) {
+                alert("上传失败!  " + error);
+            }
+            alert(fileURL);
+            var type = fileURL.split('.');
+            var t = new Date().getTime();//文件名 ，可以用uuid代替
+            var objectKey = "test/" + t + "." + type[type.length - 1];
+            alert(objectKey);
+            alert(ComSkusoftPluginsOss);
+            alert(ComSkusoftPluginsOss.upload);
+
+            var params = {};
+            params.fileUrl = fileURL;//文件地址
+            params.objectKey = objectKey;//上传到oss的目录
+            params.bucketName = "tswsoft";//oss上分区名字
+            params.endpoint = "oss-cn-hangzhou.aliyuncs.com"//oss所在的地区域名
+            params.accessKeyId = "STS.NJfcfP8rEKrqnCFXjuMXpytfE";  //http://hg.test.skusoft.com/upload.html/getToken 接口获取的 accessKeyId
+            params.accessKeySecret = "7JwX2PjQddLxvYnddrH2t8Zo2LZJrc7hjUQHA1bHYxkB";  //http://hg.test.skusoft.com/upload.html/getToken 接口获取的 acessKeySecret
+            params.security = "CAISuAJ1q6Ft5B2yfSjIr4nTKNzk1a1k/LCabGX3vGogQddclrHNpzz2IH9IeXFvCO8Wt/UymmxX6/kflqB6T55OSAmcNZIoOlSId9zlMeT7oMWQweEun//MQBqBaXPS2MvVfJ+2Lrf0ceusbFbpjzJ6xaCAGxypQ12iN+/u6/tgdc9FZhSkSjBECdxKXCsAzvUXLnzML/2gHwf3i27LdipStxF7lHl05Nb7oLCV4QGMi0bhmK1H5dbtOYe/aMdwe9UdKN6+x75xbbGTknwSuQRR67xxgrBmgW6Y54jBXAUKvEnYa7GMqIBVQVUnNvRgKcltt+PhkPB0gOvXmrnsxgxFVeMvCHuDGdj/kZSUQbL0aIpmKOmmIQfE1tGeK5/yqBg4ZnEWMgxHfdc7I2N3EwYrTjzK0yVAYYIwj2wagAEjuwwY/XwwHVu7T4TXGdlYG2uQaefpGtglJJnDufvWH6Xf6lGEXnUUCC98mMq8p1t4jH86vhB43Op0mic9I7Z7l1tEi8kMSjw4QANivH03ZWffkHzmPjPTChVXdmAo26iBt+ai4y86/XLCqvFKmLsvWlw13P1aPvrkBe9mB8Mapw==";  //http://hg.test.skusoft.com/upload.html/getToken 接口获取的 security
+
+            ComSkusoftPluginsOss.upload(success, fail, [params]);
+        }
+    };
+
+    app.initialize();
+</script>
