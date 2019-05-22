@@ -508,6 +508,17 @@ AppUpdate.checkAppUpdate(function(){}, function(){}, 'http://tswsoft.oss-cn-hang
                     2
                 );
             });
+            
+            $('#btnImportQrcode').click(function(ev){
+                QrcodeImport.getQRImageInfo(onSuccessImportQrcode,onErrorImportQrcode);
+                function onSuccessImportQrcode(msg) {
+                    alert(msg);
+                   
+                }
+                function onErrorImportQrcode(error) {
+                    alert(error);
+                }
+            });
 
 
             //获取用户资料
